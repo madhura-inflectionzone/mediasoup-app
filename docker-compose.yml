@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    image: mediasoup-app  # Use the image name you created
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"               # Signaling server port
+      - "4443:4443"               # Optional WebRTC signaling over TCP
+      - "40000-49999:40000-49999/udp"  # UDP ports for WebRTC transport
+    environment:
+      - PORT=4010                 # Set the PORT environment variable
+      - NODE_ENV=production
+    networks:
+      - mediasoup_network
+
+networks:
+  mediasoup_network:
+    driver: bridge

@@ -410,16 +410,9 @@ socket.on('joinRoom', async ({ roomName }, callback) => {
     // Now proceed with finding the consumer
     const { consumer } = consumers.find(consumerData => consumerData.consumer.id === serverConsumerId);
   
-    // Existing code continues here
-    // e.g., consumer.resume(), etc.
   });
   
 
-  // socket.on('consumer-resume', async () => {
-  //   console.log('consumer resume')
-  //   const { consumer } = consumers.find(consumerData => consumerData.consumer.id === serverConsumerId)
-  //   await consumer.resume()
-  // })
 })
 
 const createWebRtcTransport = async (router) => {

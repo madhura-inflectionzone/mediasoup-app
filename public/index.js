@@ -19,8 +19,6 @@ let producer
 let consumer
 let isProducer = false
 
-// https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerOptions
-// https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
 let params = {
   // mediasoup params
   encodings: [
@@ -40,7 +38,6 @@ let params = {
       scalabilityMode: 'S1T3',
     },
   ],
-  // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerCodecOptions
   codecOptions: {
     videoGoogleStartBitrate: 1000
   }
@@ -129,10 +126,8 @@ const createSendTransport = () => {
 
     // creates a new WebRTC Transport to send media
     // based on the server's producer transport params
-    // https://mediasoup.org/documentation/v3/mediasoup-client/api/#TransportOptions
     producerTransport = device.createSendTransport(params)
 
-    // https://mediasoup.org/documentation/v3/communication-between-client-and-server/#producing-media
     // this event is raised when a first call to transport.produce() is made
     // see connectSendTransport() below
     producerTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
@@ -183,7 +178,6 @@ const createSendTransport = () => {
 const connectSendTransport = async () => {
   // we now call produce() to instruct the producer transport
   // to send media to the Router
-  // https://mediasoup.org/documentation/v3/mediasoup-client/api/#transport-produce
   // this action will trigger the 'connect' and 'produce' events above
   producer = await producerTransport.produce(params)
 
@@ -247,7 +241,7 @@ socket.on('new-producer', ({ producerId }) => signalNewConsumerTransport(produce
 
 const getProducers = () => {
   socket.emit('getProducers', producerIds => {
-    console.log(producerIds)
+    console.log('Producers in the room:',producerIds)
     // for each of the producer create a consumer
     // producerIds.forEach(id => signalNewConsumerTransport(id))
     producerIds.forEach(signalNewConsumerTransport)
@@ -293,7 +287,8 @@ const connectRecvTransport = async (consumerTransport, remoteProducerId, serverC
     const newElem = document.createElement('div')
     newElem.setAttribute('id', `td-${remoteProducerId}`)
     newElem.setAttribute('class', 'remoteVideo')
-    newElem.innerHTML = '<video id="' + remoteProducerId + '" autoplay class="video" ></video>'
+    newElem.innerHTML = `<video id="${remoteProducerId}" autoplay playsinline class="video"></video>`;
+    // newElem.innerHTML = '<video id="' + remoteProducerId + '" autoplay class="video" ></video>'
     videoContainer.appendChild(newElem)
   
     // destructure and retrieve the video track from the producer
@@ -308,15 +303,34 @@ const connectRecvTransport = async (consumerTransport, remoteProducerId, serverC
 }
 
 socket.on('producer-closed', ({ remoteProducerId }) => {
-  // server notification is received when a producer is closed
-  // we need to close the client-side consumer and associated transport
-  const producerToClose = consumerTransports.find(transportData => transportData.producerId === remoteProducerId)
-  producerToClose.consumerTransport.close()
-  producerToClose.consumer.close()
+    const producerToClose = consumerTransports.find(
+      (transportData) => transportData.producerId === remoteProducerId
+    );
+  
+    if (producerToClose) {
+      producerToClose.consumerTransport.close();
+      producerToClose.consumer.close();
+      consumerTransports = consumerTransports.filter(
+        (transportData) => transportData.producerId !== remoteProducerId
+      );
+  
+      // Remove the video element from the DOM
+      const videoElem = document.getElementById(`td-${remoteProducerId}`);
+      if (videoElem) {
+        videoContainer.removeChild(videoElem);
+      }
+    }
+  });
+// socket.on('producer-closed', ({ remoteProducerId }) => {
+//   // server notification is received when a producer is closed
+//   // we need to close the client-side consumer and associated transport
+//   const producerToClose = consumerTransports.find(transportData => transportData.producerId === remoteProducerId)
+//   producerToClose.consumerTransport.close()
+//   producerToClose.consumer.close()
 
-  // remove the consumer transport from the list
-  consumerTransports = consumerTransports.filter(transportData => transportData.producerId !== remoteProducerId)
+//   // remove the consumer transport from the list
+//   consumerTransports = consumerTransports.filter(transportData => transportData.producerId !== remoteProducerId)
 
-  // remove the video div element
-  videoContainer.removeChild(document.getElementById(`td-${remoteProducerId}`))
-})
+//   // remove the video div element
+//   videoContainer.removeChild(document.getElementById(`td-${remoteProducerId}`))
+// })

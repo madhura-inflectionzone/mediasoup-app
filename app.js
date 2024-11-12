@@ -34,7 +34,6 @@ httpsServer.listen(4010, () => {
 
 const io = new Server(httpsServer)
 
-// socket.io namespace (could represent a room?)
 const connections = io.of('/mediasoup')
 
 let worker
@@ -69,11 +68,6 @@ const createWorker = async () => {
 
 // We create a Worker as soon as our application starts
 worker = createWorker()
-
-// This is an Array of RtpCapabilities
-// https://mediasoup.org/documentation/v3/mediasoup/rtp-parameters-and-capabilities/#RtpCodecCapability
-// list of media codecs supported by mediasoup ...
-// https://github.com/versatica/mediasoup/blob/v3/src/supportedRtpCapabilities.ts
 const mediaCodecs = [
   {
     kind: 'audio',
@@ -135,53 +129,6 @@ connections.on('connection', async socket => {
     }
 });
 
-
-
-  // socket.on('disconnect', () => {
-  //   // do some cleanup
-  //   console.log('peer disconnected')
-  //   consumers = removeItems(consumers, socket.id, 'consumer')
-  //   producers = removeItems(producers, socket.id, 'producer')
-  //   transports = removeItems(transports, socket.id, 'transport')
-
-  //   const { roomName } = peers[socket.id]
-  //   delete peers[socket.id]
-
-  //   // remove socket from room
-  //   rooms[roomName] = {
-  //     router: rooms[roomName].router,
-  //     peers: rooms[roomName].peers.filter(socketId => socketId !== socket.id)
-  //   }
-  // })
-
-//   socket.on('joinRoom', async ({ roomName }, callback) => {
-//     // Check if the room already exists, otherwise create a new Router
-//     const router1 = rooms[roomName]?.router || await createRoom(roomName, socket.id);
-
-//     // If the peer is not already in the peers object, add it
-//     if (!peers[socket.id]) {
-//         peers[socket.id] = {
-//             socket,
-//             roomName,           // Name for the Router this Peer joined
-//             transports: [],
-//             producers: [],
-//             consumers: [],
-//             peerDetails: {
-//                 name: '',
-//                 isAdmin: false,   // Is this Peer the Admin?
-//             }
-//         };
-//     } else {
-//         // Update the room name if the peer is already connected
-//         peers[socket.id].roomName = roomName;
-//     }
-
-//     // Get Router RTP Capabilities
-//     const rtpCapabilities = router1.rtpCapabilities;
-
-//     // Call the callback from the client and send back the RTP Capabilities
-//     callback({ rtpCapabilities });
-// });
 socket.on('joinRoom', async ({ roomName }, callback) => {
   try {
       // Ensure the room router exists or create one if necessary
@@ -210,30 +157,6 @@ socket.on('joinRoom', async ({ roomName }, callback) => {
       callback({ error: "Unable to join room" });
   }
 });
-
-  // socket.on('joinRoom', async ({ roomName }, callback) => {
-  //   // create Router if it does not exist
-  //   // const router1 = rooms[roomName] && rooms[roomName].get('data').router || await createRoom(roomName, socket.id)
-  //   const router1 = await createRoom(roomName, socket.id)
-
-  //   peers[socket.id] = {
-  //     socket,
-  //     roomName,           // Name for the Router this Peer joined
-  //     transports: [],
-  //     producers: [],
-  //     consumers: [],
-  //     peerDetails: {
-  //       name: '',
-  //       isAdmin: false,   // Is this Peer the Admin?
-  //     }
-  //   }
-
-  //   // get Router RTP Capabilities
-  //   const rtpCapabilities = router1.rtpCapabilities
-
-  //   // call callback from the client and send back the rtpCapabilities
-  //   callback({ rtpCapabilities })
-  // })
 
 
   const createRoom = async (roomName, socketId) => {

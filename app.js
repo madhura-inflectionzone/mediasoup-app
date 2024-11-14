@@ -314,18 +314,18 @@ socket.on('joinRoom', async ({ roomName }, callback) => {
     addProducer(producer, roomName)
 
     informConsumers(roomName, socket.id, producer.id)
-
-    console.log('Producer ID: ', producer.id, producer.kind)
+    console.log(`Producer created for ${kind}, ID: ${producer.id}`);
+    // console.log('Producer ID: ', producer.id, producer.kind)
 
     producer.on('transportclose', () => {
-      console.log('transport for this producer closed ')
+      console.log(`${kind} transport closed`)
       producer.close()
     })
 
     // Send back to the client the Producer's id
     callback({
       id: producer.id,
-      producersExist: producers.length>1 ? true : false
+      producersExist: producers.length>1,
     })
   })
 
@@ -422,12 +422,12 @@ const createWebRtcTransport = async (router) => {
       const webRtcTransport_options = {
         listenIps: [
           {
-            ip: '0.0.0.0', // replace with relevant IP address
-            announcedIp: '223.233.85.152',
+            ip: '223.233.83.206',
+            // announcedIp: '223.233.85.152',
           }
         ],
         enableUdp: true,
-        enableTcp: true,
+        enableTcp: false,
         preferUdp: true,
       }
       
